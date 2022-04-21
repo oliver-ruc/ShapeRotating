@@ -32,7 +32,7 @@ public class Camera {
     private static final double EPSILON = 0.001;
 
     /**
-     * Creates a Camera with the specificed direction, position, fields of vision and position.
+     * Creates a Camera with the specified direction, position, fields of vision and position.
      * <p>
      * Automatically creates the up vector of the camera by taking the cross product of the forward vector and the left vector.
      * @param cameraFwd 3x1 column vector in the direction of the camera's forward.
@@ -42,11 +42,12 @@ public class Camera {
      * @param verticalFOV   the vertical   field of vision of the camera, in radians.
      * @param cameraPos     3x1 column vector of the position of the camera.
      * @throws IllegalArgumentException if the dimensions of any of the matrices are incorrect
-     * @throws IllegalArgumentException if the magnitude of either of the camera direction vectors are <0.001
-     * @throws IllegalArgumentException if d <0.001
-     * @throws IllegalArgumentException if cameraFwd and cameraLft are not perpendicular (dot product <0.001)
+     * @throws IllegalArgumentException if the magnitude of either of the camera direction vectors are &lt;0.001
+     * @throws IllegalArgumentException if d &lt;0.001
+     * @throws IllegalArgumentException if cameraFwd and cameraLft are not perpendicular (dot product &lt;0.001)
      */
     public Camera(Matrix cameraFwd, Matrix cameraLft, double cameraD, double horizontalFOV, double verticalFOV, Matrix cameraPos) {
+
         if (cameraFwd.getRowDimension() != 3 || cameraFwd.getColumnDimension() != 1) {
             throw new IllegalArgumentException("cameraFwd should be a 3x1 column vector, was " + cameraFwd.getRowDimension() + "x" + cameraFwd.getColumnDimension() + ".");
         }
@@ -56,6 +57,7 @@ public class Camera {
         if (cameraPos.getRowDimension() != 3 || cameraPos.getColumnDimension() != 1) {
             throw new IllegalArgumentException("cameraPos should be a 3x1 column vector, was " + cameraPos.getRowDimension() + "x" + cameraPos.getColumnDimension() + ".");
         }
+
         if (cameraFwd.normF() < EPSILON) {
             throw new IllegalArgumentException("cameraFwd should not be a zero vector, but seems to be (norm < 0.001)");
         }
@@ -65,9 +67,11 @@ public class Camera {
         if (cameraD < EPSILON) {
             throw new IllegalArgumentException("cameraD should not be 0 or negative, but seems to be ("+cameraD+"<0.001)");
         }
+
         if (Math.abs(cameraFwd.transpose().times(cameraLft).get(0,0)) > EPSILON) {
             throw new IllegalArgumentException("cameraFwd and cameraLft should be perpendicular, but seem not to be (dot product > 0.001).");
         }
+
         Matrix _cameraFwd = cameraFwd.times(1/cameraFwd.normF());
         Matrix _cameraLft = cameraLft.times(1/cameraLft.normF());
         Matrix _cameraUp = Utils.crossProduct(_cameraFwd, _cameraLft);
@@ -153,7 +157,7 @@ public class Camera {
      * @param cameraMatrix a 3x3 matrix.
      * @throws IllegalArgumentException If the supplied cameraMatrix is not 3x3.
      * @throws IllegalArgumentException If the vectors are not perpendicular.
-     * @throws IllegalArgumentException If the norm of any of the vectors is < 0.001.
+     * @throws IllegalArgumentException If the norm of any of the vectors is &lt; 0.001.
      * @throws IllegalArgumentException If the orientation of the vectors is wrong (i.e. one of the vectors is in the wrong direction when used with the other two).
      * @see Camera#setCameraMatrixWithoutChecks(Matrix cameraMatrix)
      */

@@ -75,14 +75,14 @@ public class ShapeRotator extends JPanel implements KeyListener {
                 {i%n - (n/2.0)+0.5},
                 {(i/n)%n - (n/2.0)+0.5},
                 {(i/(n*n))%n - (n/2.0)+0.5},
-            }), 0.25);
+            }), 0.75);
         }
 
         for(int i = 0; i < minecraft.length; i++) {
             g.setColor(Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
             minecraft[i].setCenter(rotation.times(minecraft[i].getCenter()));
             minecraft[i].setRotationMatrix(rotation);
-            minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
+            minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
         }
         
         
@@ -144,75 +144,71 @@ public class ShapeRotator extends JPanel implements KeyListener {
 
     public void updateKeysStuffs() {
         // System.out.println(keysPressed.size());
-        for (Integer keyCode : keysPressed) {
-            switch (keyCode) {
-                case KeyEvent.VK_LEFT:
-                    rotation = RotationMatrices.AboutPositiveX( ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_RIGHT:
-                    rotation = RotationMatrices.AboutPositiveX(-ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_UP:
-                    rotation = RotationMatrices.AboutPositiveY( ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_DOWN:
-                    rotation = RotationMatrices.AboutPositiveY(-ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_O:
-                    rotation = RotationMatrices.AboutPositiveZ( ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_P:
-                    rotation = RotationMatrices.AboutPositiveZ(-ROTATE_SPEED).times(rotation);
-                    break;
-                case KeyEvent.VK_W:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraUp ().times( MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_S:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraUp ().times(-MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_A:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraLft().times( MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_D:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraLft().times(-MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_X:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times( MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_Z:
-                    camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times(-MOVEMENT_SPEED)));
-                    break;
-                case KeyEvent.VK_I:
-                    camera.setCameraMatrix(
-                        RotationMatrices.Abritary(camera.getCameraLft(), -ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-                case KeyEvent.VK_K:
-                    camera.setCameraMatrixWithoutChecks(
-                        RotationMatrices.Abritary(camera.getCameraLft(), +ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-                case KeyEvent.VK_J:
-                    camera.setCameraMatrixWithoutChecks(
-                        RotationMatrices.Abritary(camera.getCameraUp (), +ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-                case KeyEvent.VK_L:
-                    camera.setCameraMatrixWithoutChecks(
-                        RotationMatrices.Abritary(camera.getCameraUp (), -ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-                case KeyEvent.VK_Q:
-                    camera.setCameraMatrixWithoutChecks(
-                        RotationMatrices.Abritary(camera.getCameraFwd(), -ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-                case KeyEvent.VK_E:
-                    camera.setCameraMatrixWithoutChecks(
-                        RotationMatrices.Abritary(camera.getCameraFwd(),  ROTATE_SPEED).times(camera.getCameraMatrix())
-                    );
-                    break;
-            }
+        if (keysPressed.contains(KeyEvent.VK_LEFT)) {
+            rotation = RotationMatrices.AboutPositiveX(+ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_RIGHT)) {
+            rotation = RotationMatrices.AboutPositiveX(-ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_UP)) {
+            rotation = RotationMatrices.AboutPositiveY(+ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_DOWN)) {
+            rotation = RotationMatrices.AboutPositiveY(-ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_O)) {
+            rotation = RotationMatrices.AboutPositiveZ(+ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_P)) {
+            rotation = RotationMatrices.AboutPositiveZ(-ROTATE_SPEED).times(rotation);
+        }
+        if (keysPressed.contains(KeyEvent.VK_W)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraUp ().times(+MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_S)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraUp ().times(-MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_A)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraLft().times(+MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_D)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraLft().times(-MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_X)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times(+MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_Z)) {
+            camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times(-MOVEMENT_SPEED)));
+        }
+        if (keysPressed.contains(KeyEvent.VK_I)) {
+            camera.setCameraMatrix(
+                RotationMatrices.Abritary(camera.getCameraLft(), -ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
+        }
+        if (keysPressed.contains(KeyEvent.VK_K)) {
+            camera.setCameraMatrixWithoutChecks(
+                RotationMatrices.Abritary(camera.getCameraLft(), +ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
+        }
+        if (keysPressed.contains(KeyEvent.VK_J)) {
+            camera.setCameraMatrixWithoutChecks(
+                RotationMatrices.Abritary(camera.getCameraUp (), +ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
+        }
+        if (keysPressed.contains(KeyEvent.VK_L)) {
+            camera.setCameraMatrixWithoutChecks(
+                RotationMatrices.Abritary(camera.getCameraUp (), -ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
+        }
+        if (keysPressed.contains(KeyEvent.VK_Q)) {
+            camera.setCameraMatrixWithoutChecks(
+                RotationMatrices.Abritary(camera.getCameraFwd(), -ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
+        }
+        if (keysPressed.contains(KeyEvent.VK_E)) {
+            camera.setCameraMatrixWithoutChecks(
+                RotationMatrices.Abritary(camera.getCameraFwd(), +ROTATE_SPEED).times(camera.getCameraMatrix())
+            );
         }
         repaint(0, 0, getWidth(), getHeight());
     }
