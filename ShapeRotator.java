@@ -1,14 +1,15 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+// import java.awt.Point;
+// import java.awt.event.MouseAdapter;
+// import java.awt.event.MouseEvent;
+// import java.awt.event.MouseMotionAdapter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Function;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import javax.swing.SwingUtilities;
@@ -27,8 +28,9 @@ public class ShapeRotator extends JPanel implements KeyListener {
     private static final double ROTATE_SPEED = Math.toRadians(5); // radians per frame
     private static final double MOVEMENT_SPEED = 0.1; //units per frame
     private Set<Integer> keysPressed = new HashSet<Integer>();
+    long startTime;
 
-    Solid myShape = new Solid(Meshes.REGULAR_TETRAHEDRON_MESH, new Matrix(3,1), 1);
+    Solid myShape = new Solid(Meshes.CUBE_MESH, new Matrix(new double[] {0, 2, 0},3), 1);
 
     double xtheta = Math.toRadians(0), ytheta = Math.toRadians(0), ztheta = Math.toRadians(0);
     
@@ -55,6 +57,11 @@ public class ShapeRotator extends JPanel implements KeyListener {
     double cameraD = 0.5;
     
     Camera camera = new Camera(cameraFwd, cameraLft, cameraD, Math.toRadians(90), Math.toRadians(90), cameraPos);
+
+    private Function<Long, Matrix> squigglyMovement = (Long n) -> {
+        double relativeTime = (n-startTime) / 1000.0;
+        return new Matrix(new double[] {relativeTime, 0, Math.sin(5*relativeTime)}, 3);
+    };
     
     /**
      * Called by the runtime system whenever the panel needs painting.
@@ -67,31 +74,33 @@ public class ShapeRotator extends JPanel implements KeyListener {
         // myShape.draw(g, camera, getWidth(), getHeight());
 
         
-        int n = 5;
-        int space = n*n*n;
-        Solid[] minecraft = new Solid[space];
-        for(int i = 0; i < space; i++) {
-            minecraft[i] = new Solid(Meshes.CUBE_MESH, new Matrix(new double[][] {
-                {i%n - (n/2.0)+0.5},
-                {(i/n)%n - (n/2.0)+0.5},
-                {(i/(n*n))%n - (n/2.0)+0.5},
-            }), 0.75);
-        }
+        // int n = 5;
+        // int space = n*n*n;
+        // Solid[] minecraft = new Solid[space];
+        // for(int i = 0; i < space; i++) {
+        //     minecraft[i] = new Solid(Meshes.CUBE_MESH, new Matrix(new double[][] {
+        //         {i%n - (n/2.0)+0.5},
+        //         {(i/n)%n - (n/2.0)+0.5},
+        //         {(i/(n*n))%n - (n/2.0)+0.5},
+        //     }), 0.75);
+        // }
 
-        for(int i = 0; i < minecraft.length; i++) {
-            g.setColor(Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
-            minecraft[i].setCenter(rotation.times(minecraft[i].getCenter()));
-            minecraft[i].setRotationMatrix(rotation);
-            minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
-        }
+        // for(int i = 0; i < minecraft.length; i++) {
+        //     g.setColor(Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
+        //     minecraft[i].setCenter(rotation.times(minecraft[i].getCenter()));
+        //     minecraft[i].setRotationMatrix(rotation);
+        //     minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
+        // }
         
         
         // Solid myShape = new Solid(Meshes.CUBE_MESH);
 
-        // myShape.setRotationMatrix(rotation);
+        myShape.setRotationMatrix(rotation);
         // myShape.setCenter(rotation.times(new Matrix(3,1)));
         // myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
-        
+        // myShape.setCenter(cubePostion(System.currentTimeMillis() - startTime));
+        myShape.update();
+        myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
     }
 
     /**
@@ -122,7 +131,16 @@ public class ShapeRotator extends JPanel implements KeyListener {
 
     public ShapeRotator() {
         super();
-
+        startTime = System.currentTimeMillis();
+        // myShape.setMovement(squigglyMovement, startTime, startTime + 10000);
+        // SimpleMovement squiggleMovement2 = new SimpleMovement(()->(myShape.getCenter()), (Long currentTime, Long deltaTime) -> (squigglyMovement.apply(currentTime)), startTime, startTime + 10000);
+        SimpleMovement squiggleMovement2 = new SimpleMovement(()->(myShape.getCenter()), (Long currentTime, Long deltaTime) -> (RotationMatrices.AboutPositiveX(ROTATE_SPEED * deltaTime / 33).times(myShape.getCenter())), startTime, startTime + 10000);
+        
+        // myShape.setMovement((Long n) -> {
+        //     double relativeTime = (n-startTime) / 1000.0;
+        //     return RotationMatrices.AboutPositiveX(ROTATE_SPEED).times(myShape.getCenter());
+        // }, startTime, startTime + 10000);
+        myShape.setMovement(squiggleMovement2::movement);
         rotation = rotation.times(RotationMatrices.AboutPositiveX(xtheta))
                            .times(RotationMatrices.AboutPositiveY(ytheta))
                            .times(RotationMatrices.AboutPositiveZ(ztheta));
@@ -174,10 +192,10 @@ public class ShapeRotator extends JPanel implements KeyListener {
         if (keysPressed.contains(KeyEvent.VK_D)) {
             camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraLft().times(-MOVEMENT_SPEED)));
         }
-        if (keysPressed.contains(KeyEvent.VK_X)) {
+        if (keysPressed.contains(KeyEvent.VK_Z)) {
             camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times(+MOVEMENT_SPEED)));
         }
-        if (keysPressed.contains(KeyEvent.VK_Z)) {
+        if (keysPressed.contains(KeyEvent.VK_X)) {
             camera.setCameraPos(camera.getCameraPos().plus(camera.getCameraFwd().times(-MOVEMENT_SPEED)));
         }
         if (keysPressed.contains(KeyEvent.VK_I)) {
