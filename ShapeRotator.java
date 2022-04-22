@@ -25,12 +25,12 @@ import javax.swing.JPanel;
 public class ShapeRotator extends JPanel implements KeyListener {
     private static final long serialVersionUID = 7148504528835036003L;
 
-    private static final double ROTATE_SPEED = Math.toRadians(5); // radians per frame
-    private static final double MOVEMENT_SPEED = 0.1; //units per frame
+    private static final double ROTATE_SPEED = Math.toRadians(5); // radians per frame (30 fps)
+    private static final double MOVEMENT_SPEED = 0.1; //units per frame (30 fps)
     private Set<Integer> keysPressed = new HashSet<Integer>();
     long startTime;
 
-    Solid myShape = new Solid(Meshes.CUBE_MESH, new Matrix(new double[] {0, 2, 0},3), 1);
+    Solid myShape = new Solid(Meshes.CUBE_MESH, new Matrix(new double[] {0, 1, 0}, 3), 1);
 
     double xtheta = Math.toRadians(0), ytheta = Math.toRadians(0), ztheta = Math.toRadians(0);
     
@@ -134,13 +134,17 @@ public class ShapeRotator extends JPanel implements KeyListener {
         startTime = System.currentTimeMillis();
         // myShape.setMovement(squigglyMovement, startTime, startTime + 10000);
         // SimpleMovement squiggleMovement2 = new SimpleMovement(()->(myShape.getCenter()), (Long currentTime, Long deltaTime) -> (squigglyMovement.apply(currentTime)), startTime, startTime + 10000);
-        SimpleMovement squiggleMovement2 = new SimpleMovement(()->(myShape.getCenter()), (Long currentTime, Long deltaTime) -> (RotationMatrices.AboutPositiveX(ROTATE_SPEED * deltaTime / 33).times(myShape.getCenter())), startTime, startTime + 10000);
-        
+        Matrix startingCenter = myShape.getCenter().copy();
+        // Matrix startingCenter = new Matrix(new double[] {0, 2, 0}, 3);
+        DisplacementFunction squiggleMovement2 = new DisplacementFunction((Long currentTime) -> {
+            return RotationMatrices.AboutPositiveX(ROTATE_SPEED * (currentTime-startTime) / 33).times(startingCenter).minus(startingCenter);
+        }, startTime);
         // myShape.setMovement((Long n) -> {
         //     double relativeTime = (n-startTime) / 1000.0;
         //     return RotationMatrices.AboutPositiveX(ROTATE_SPEED).times(myShape.getCenter());
         // }, startTime, startTime + 10000);
-        myShape.setMovement(squiggleMovement2::movement);
+        myShape.addDisplacementFunction(squiggleMovement2);
+        myShape.addDisplacementFunction(new DisplacementFunction((Long currentTime) -> (new Matrix(new double[] {(currentTime - startTime)/1000.0, 0, 0}, 3)), startTime));
         rotation = rotation.times(RotationMatrices.AboutPositiveX(xtheta))
                            .times(RotationMatrices.AboutPositiveY(ytheta))
                            .times(RotationMatrices.AboutPositiveZ(ztheta));

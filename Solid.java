@@ -1,6 +1,6 @@
 import Jama.Matrix;
 import java.awt.Graphics;
-import java.util.function.Function;
+import java.util.ArrayList;
 import java.awt.Color;
 
 public class Solid {
@@ -8,7 +8,7 @@ public class Solid {
     private Matrix _center;
     double _scale = 1;
     Matrix _rotationMatrix = Matrix.identity(3, 3);
-    Function<Long, Matrix> _movementFunction = (n) -> (_center);
+    ArrayList<DisplacementFunction> _displacementFunctions = new ArrayList<DisplacementFunction>();
 
     public Solid(Triangle[] mesh, Matrix center, double scale) {
         _mesh = mesh;
@@ -88,21 +88,14 @@ public class Solid {
         _center.plusEquals(displacement);
     }
 
-    public void setMovement(Function<Long, Matrix> movementFunction) {
-        _movementFunction = movementFunction;
-    }
-
-    public void setMovement(Function<Long, Matrix> movementFunction, long startTime, long endTime) {
-        _movementFunction = (Long n) -> {
-            if (n < startTime || n > endTime) {
-                return _center;
-            } else {
-                return movementFunction.apply(n);
-            }
-        };
+    public void addDisplacementFunction(DisplacementFunction displacementFunction) {
+        _displacementFunctions.add(displacementFunction);
     }
 
     public void update() {
-        _center = _movementFunction.apply(System.currentTimeMillis());
+        for (DisplacementFunction displacementFunction : _displacementFunctions) {
+            _center.plusEquals(displacementFunction.displacementSinceLastCheck(System.currentTimeMillis()));
+            System.out.println(Utils.matrixToString(_center.transpose()));
+        }
     }
 }
