@@ -9,6 +9,7 @@ public class Solid {
     double _scale = 1;
     Matrix _rotationMatrix = Matrix.identity(3, 3);
     ArrayList<DisplacementFunction> _displacementFunctions = new ArrayList<DisplacementFunction>();
+    ArrayList<RotationFunction> _rotationFunctions = new ArrayList<RotationFunction>();
 
     public Solid(Triangle[] mesh, Matrix center, double scale) {
         _mesh = mesh;
@@ -92,10 +93,16 @@ public class Solid {
         _displacementFunctions.add(displacementFunction);
     }
 
+    public void addRotationFunction(RotationFunction rotationFunction) {
+        _rotationFunctions.add(rotationFunction);
+    }
+
     public void update() {
         for (DisplacementFunction displacementFunction : _displacementFunctions) {
-            _center.plusEquals(displacementFunction.displacementSinceLastCheck(System.currentTimeMillis()));
-            System.out.println(Utils.matrixToString(_center.transpose()));
+            this.displace(displacementFunction.displacementSinceLastCheck(System.currentTimeMillis()));
+        }
+        for (RotationFunction rotationFunction : _rotationFunctions) {
+            this.rotate(rotationFunction.rotationSinceLastCheck(System.currentTimeMillis()));
         }
     }
 }
