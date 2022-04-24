@@ -71,7 +71,7 @@ public class ShapeRotator extends JPanel implements KeyListener {
         super.paintComponent(g);
         accumulatedRotation = accumulatedRotation.times(rotation);
 
-        
+        /*
         for(int i = 0; i < minecraft.length; i++) {
             minecraft[i].update();
             minecraft[i].setCenter(rotation.times(minecraft[i].getCenter()));
@@ -79,13 +79,14 @@ public class ShapeRotator extends JPanel implements KeyListener {
             // minecraft[i].setRotationMatrix(accumulatedRotation);
             minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1-1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1-1.0f/minecraft.length * i, 1f, 0.5f));
         }
+        */
         
 
         // myShape.setCenter(rotation.times(new Matrix(3,1)));
         // myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
-        // myShape.update();
-        // myShape.rotate(rotation);
-        // myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
+        myShape.update();
+        myShape.rotate(rotation);
+        myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
     }
 
     /**
@@ -124,9 +125,14 @@ public class ShapeRotator extends JPanel implements KeyListener {
             return RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000).times(startingCenter).minus(startingCenter);
         }, startTime, true);
         RotationFunction squiggleMovement3 = new RotationFunction((Long relativeTime)->( RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000)), startTime, true);
-        myShape.addDisplacementFunction(squiggleMovement2);
+        // myShape.addDisplacementFunction(squiggleMovement2);
         // myShape.addDisplacementFunction(new DisplacementFunction((Long currentTime) -> (new Matrix(new double[] {(currentTime - startTime)/1000.0, 0, 0}, 3)), startTime));
-        myShape.addRotationFunction(squiggleMovement3);
+        // myShape.addRotationFunction(squiggleMovement3);
+        TrollingFunction squiggleMovement4 = new TrollingFunction((Long relativeTime, Solid solid) -> {
+            // return DisplacementAndRotation.displacement(RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000.0).times(solid.getCenter()));
+            return DisplacementAndRotation.displacement(RotationMatrices.AboutPositiveX(ROTATE_SPEED / frameRate).times(solid.getCenter()));
+        }, startTime, true);
+        myShape.addTrollingFunction(squiggleMovement4);
         rotation = rotation.times(RotationMatrices.AboutPositiveX(xtheta))
                            .times(RotationMatrices.AboutPositiveY(ytheta))
                            .times(RotationMatrices.AboutPositiveZ(ztheta));
