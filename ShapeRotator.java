@@ -28,7 +28,7 @@ public class ShapeRotator extends JPanel implements KeyListener {
     private static final double ROTATE_SPEED = Math.toRadians(135); // radians per second
     private static final double MOVEMENT_SPEED = 3; //units per second
     private Set<Integer> keysPressed = new HashSet<Integer>();
-    int frameRate = 60;
+    int frameRate = 60; // not frame rate
     long startTime;
 
     Solid myShape = new Solid(Meshes.CUBE_MESH, new Matrix(new double[] {0, 1, 0}, 3), 1);
@@ -59,11 +59,10 @@ public class ShapeRotator extends JPanel implements KeyListener {
     double cameraD = 0.5;
     
     Camera camera = new Camera(cameraFwd, cameraLft, cameraD, Math.toRadians(90), Math.toRadians(90), cameraPos);
-
-    private Function<Long, Matrix> squigglyMovement = (Long n) -> {
-        double relativeTime = (n-startTime) / 1000.0;
-        return new Matrix(new double[] {relativeTime, 0, Math.sin(5*relativeTime)}, 3);
-    };
+        
+    int n = 5;
+    int space = n*n*n;
+    Solid[] minecraft = new Solid[space];
     
     /**
      * Called by the runtime system whenever the panel needs painting.
@@ -71,28 +70,16 @@ public class ShapeRotator extends JPanel implements KeyListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         accumulatedRotation = accumulatedRotation.times(rotation);
-        /*
-        int n = 5;
-        int space = n*n*n;
-        Solid[] minecraft = new Solid[space];
-        for(int i = 0; i < space; i++) {
-            minecraft[i] = new Solid(Meshes.CUBE_MESH, new Matrix(new double[][] {
-                {i%n - (n/2.0)+0.5},
-                {(i/n)%n - (n/2.0)+0.5},
-                {(i/(n*n))%n - (n/2.0)+0.5},
-            }), 1);
-        }
 
+        
         for(int i = 0; i < minecraft.length; i++) {
-            g.setColor(Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
-            minecraft[i].setCenter(accumulatedRotation.times(minecraft[i].getCenter()));
-            minecraft[i].setRotationMatrix(accumulatedRotation);
-            minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1.0f/minecraft.length * i, 1f, 0.5f));
+            minecraft[i].update();
+            minecraft[i].setCenter(rotation.times(minecraft[i].getCenter()));
+            minecraft[i].rotate(rotation);
+            // minecraft[i].setRotationMatrix(accumulatedRotation);
+            minecraft[i].drawFilled(g, camera, getWidth(), getHeight(), Color.getHSBColor(1-1.0f/minecraft.length * i, 1f, 0.5f), Color.getHSBColor(1-1.0f/minecraft.length * i, 1f, 0.5f));
         }
-        */
         
-        
-        // Solid myShape = new Solid(Meshes.CUBE_MESH);
 
         // myShape.setCenter(rotation.times(new Matrix(3,1)));
         // myShape.drawFilled(g, camera, getWidth(), getHeight(), Color.BLACK, Color.CYAN);
@@ -107,7 +94,6 @@ public class ShapeRotator extends JPanel implements KeyListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             var panel = new ShapeRotator();
-            //panel.setBackground(Color.GREEN.darker());
             var frame = new JFrame("A simple graphics program");
             frame.getContentPane().add(panel, BorderLayout.CENTER);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -119,6 +105,7 @@ public class ShapeRotator extends JPanel implements KeyListener {
                 public void run() {
                     try {
                         panel.updateKeysStuffs();
+                        panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
@@ -136,13 +123,21 @@ public class ShapeRotator extends JPanel implements KeyListener {
             // return RotationMatrices.AboutPositiveX(ROTATE_SPEED * (currentTime-startTime) / 1000).times(startingCenter).minus(startingCenter).times(Math.pow(Math.E, -(currentTime-startTime)/5000.0));
             return RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000).times(startingCenter).minus(startingCenter);
         }, startTime, true);
-        RotationFunction squiggleMovement3 = new RotationFunction((Long relativeTime)->(RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000)), startTime, true);
+        RotationFunction squiggleMovement3 = new RotationFunction((Long relativeTime)->( RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000)), startTime, true);
         myShape.addDisplacementFunction(squiggleMovement2);
         // myShape.addDisplacementFunction(new DisplacementFunction((Long currentTime) -> (new Matrix(new double[] {(currentTime - startTime)/1000.0, 0, 0}, 3)), startTime));
         myShape.addRotationFunction(squiggleMovement3);
         rotation = rotation.times(RotationMatrices.AboutPositiveX(xtheta))
                            .times(RotationMatrices.AboutPositiveY(ytheta))
                            .times(RotationMatrices.AboutPositiveZ(ztheta));
+        for(int i = 0; i < space; i++) {
+            minecraft[i] = new Solid(Meshes.CUBE_MESH, new Matrix(new double[][] {
+                {i%n - (n/2.0)+0.5},
+                {(i/n)%n - (n/2.0)+0.5},
+                {(i/(n*n))%n - (n/2.0)+0.5},
+            }), 1);
+            // minecraft[i].addRotationFunction(new RotationFunction((Long relativeTime)->(RotationMatrices.AboutPositiveX(ROTATE_SPEED * (relativeTime) / 1000)), startTime, true));
+        }
     }
 
     public void keyPressed(KeyEvent e) {
@@ -228,6 +223,5 @@ public class ShapeRotator extends JPanel implements KeyListener {
                 RotationMatrices.Abritary(camera.getCameraFwd(), +ROTATE_SPEED/frameRate).times(camera.getCameraMatrix())
             );
         }
-        repaint(0, 0, getWidth(), getHeight());
     }
 }

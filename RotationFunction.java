@@ -47,9 +47,9 @@ public class RotationFunction {
         return _relativeTime ? _rotationFunction.apply(currentTime-_startTime) : _rotationFunction.apply(currentTime);
     }
     public Matrix rotationSinceLastCheck(long currentTime) {
-        Matrix output = this.rotationNoUpdate(currentTime).times(this.rotationNoUpdate(_previousTime).inverse());
+        long _savedPreviousTime = _previousTime;
         _previousTime = currentTime;
-        return output;
+        return this.rotationNoUpdate(currentTime).times(this.rotationNoUpdate(_savedPreviousTime).inverse());
     }
     
 }

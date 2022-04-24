@@ -44,8 +44,7 @@ public class Solid {
         for(int i = 0; i < _mesh.length; i++) {
             Matrix saved = _mesh[i].getMatrix().copy();
             _mesh[i].setMatrix(saved.times(_scale));
-            Matrix rotated = _rotationMatrix.times(_mesh[i].getMatrix());
-            _mesh[i].setMatrix(rotated);
+            _mesh[i].setMatrix(_rotationMatrix.times(_mesh[i].getMatrix()));
             _mesh[i].displace(_center);
             _mesh[i].drawEdges(g, camera, width, height);
             _mesh[i].setMatrix(saved);
@@ -59,8 +58,7 @@ public class Solid {
         for(int i = 0; i < _mesh.length; i++) {
             saved[i] = _mesh[i].getMatrix();
             _mesh[i].setMatrix(_mesh[i].getMatrix().times(_scale));
-            Matrix rotated = _rotationMatrix.times(_mesh[i].getMatrix());
-            _mesh[i].setMatrix(rotated);
+            _mesh[i].setMatrix(_rotationMatrix.times(_mesh[i].getMatrix()));
             _mesh[i].displace(_center);
         }
 
@@ -69,8 +67,9 @@ public class Solid {
             triangleCentroidDistances[i] = _mesh[i].getDistanceFromCentroid(camera._cameraPos);
             _mesh[i].computeCentroid();
         }
+        int max_index;
         for(int i = 0; i < _mesh.length; i++) {
-            int max_index = Utils.indexOfMax(triangleCentroidDistances, 0.001);
+            max_index = Utils.indexOfMax(triangleCentroidDistances, 0.001);
             _mesh[max_index].drawFilled(g, camera, width, height, edgeColor, fillColor);
             triangleCentroidDistances[max_index] = Double.NEGATIVE_INFINITY;
             _mesh[max_index].setMatrix(saved[max_index]);

@@ -39,6 +39,7 @@ public class DisplacementFunction {
         _previousTime = currentTime;
         return _relativeTime ? _displacementFunction.apply(currentTime-_startTime) : _displacementFunction.apply(currentTime);
     }
+
     public Matrix displacementNoUpdate(long currentTime) {
         if (currentTime < _startTime) {
             currentTime = _startTime;
@@ -47,9 +48,10 @@ public class DisplacementFunction {
         }
         return _relativeTime ? _displacementFunction.apply(currentTime-_startTime) : _displacementFunction.apply(currentTime);
     }
+    
     public Matrix displacementSinceLastCheck(long currentTime) {
-        Matrix output = this.displacementNoUpdate(currentTime).minus(this.displacementNoUpdate(_previousTime));
+        long _savedPreviousTime = _previousTime;
         _previousTime = currentTime;
-        return output;
+        return this.displacementNoUpdate(currentTime).minus(this.displacementNoUpdate(_savedPreviousTime));
     }
 }
